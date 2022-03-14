@@ -13,17 +13,24 @@ const BASE_URL = "https://api.tvmaze.com/";
  *    (if no image URL given by API, put in a default image URL)
  */
 
+const DEFAULT_IMG = "https://tinyurl.com/tv-missing";
 
-interface ShowInterface{
+interface ShowsInterface{
   id: number,
   name: string,
   summary: string,
-  image?: string,
+  image: string,
 }
-interface DefaultImgInterface{
-  url: string 
+
+interface ApiResultInterface{
+  id: number,
+  name: string,
+  summary: string,
+  image: {medium: string} | null,
 }
-async function getShowsByTerm(term:string): Promise<ShowInterface[]> {
+
+
+async function getShowsByTerm(term:string): Promise<ShowsInterface[]> {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
   // return [
   //   {
@@ -45,13 +52,21 @@ async function getShowsByTerm(term:string): Promise<ShowInterface[]> {
   // ]
   const result = await axios.get(`${BASE_URL}search/shows?q=${term}`);
   console.log("result", result.data);  
-  const shows = result.data;
-  for(let show of shows){
-    if(!show.image){
-      show.image = "https://tinyurl.com/tv-missing";
+  const shows = result.data; 
+  const showsResult:ShowsInterface[] = [];
+  for(let {show} of shows){
+    let newShow:ApiResultInterface = show;
+    let showInfo:ShowsInterface = {
+      id: newShow.id,
+      name: newShow.name,
+      summary: newShow.summary,
+      image: newShow.image?.medium || DEFAULT_IMG,
     }
+    console.log("showInfo", showInfo);
+    
+    showsResult.push(showInfo);
   }
-  return result.data;
+  return showsResult; 
 
 
 }
@@ -59,7 +74,7 @@ async function getShowsByTerm(term:string): Promise<ShowInterface[]> {
 
 /** Given list of shows, create markup for each and to DOM */
 
-function populateShows(shows: ShowInterface[]): void {
+function populateShows(shows: ShowsInterface[]): void {
   $showsList.empty();
   console.log("shows in populate shows", shows);
   for (let show of shows) {

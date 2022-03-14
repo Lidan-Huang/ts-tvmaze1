@@ -12751,23 +12751,38 @@ var $showsList = $("#showsList");
 var $episodesArea = $("#episodesArea");
 var $searchForm = $("#searchForm");
 var BASE_URL = "https://api.tvmaze.com/";
+/** Given a search term, search for tv shows that match that query.
+ *
+ *  Returns (promise) array of show objects: [show, show, ...].
+ *    Each show object should contain exactly: {id, name, summary, image}
+ *    (if no image URL given by API, put in a default image URL)
+ */
+var DEFAULT_IMG = "https://tinyurl.com/tv-missing";
 function getShowsByTerm(term) {
+    var _a;
     return __awaiter(this, void 0, void 0, function () {
-        var result, shows, _i, shows_1, show;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var result, shows, showsResult, _i, shows_1, show, newShow, showInfo;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0: return [4 /*yield*/, axios_1.default.get("".concat(BASE_URL, "search/shows?q=").concat(term))];
                 case 1:
-                    result = _a.sent();
+                    result = _b.sent();
                     console.log("result", result.data);
                     shows = result.data;
+                    showsResult = [];
                     for (_i = 0, shows_1 = shows; _i < shows_1.length; _i++) {
-                        show = shows_1[_i];
-                        if (!show.image) {
-                            show.image = "https://tinyurl.com/tv-missing";
-                        }
+                        show = shows_1[_i].show;
+                        newShow = show;
+                        showInfo = {
+                            id: newShow.id,
+                            name: newShow.name,
+                            summary: newShow.summary,
+                            image: ((_a = newShow.image) === null || _a === void 0 ? void 0 : _a.medium) || DEFAULT_IMG,
+                        };
+                        console.log("showInfo", showInfo);
+                        showsResult.push(showInfo);
                     }
-                    return [2 /*return*/, result.data];
+                    return [2 /*return*/, showsResult];
             }
         });
     });
