@@ -1,8 +1,10 @@
 import axios from "axios";
-import * as $ from 'jquery';
+import * as $ from "jquery";
 
+const $show = $(".Show");
 const $showsList = $("#showsList");
 const $episodesArea = $("#episodesArea");
+const $episodeBtn = $(".Show-getEpisodes");
 const $searchForm = $("#searchForm");
 const BASE_URL = "https://api.tvmaze.com/";
 
@@ -15,62 +17,46 @@ const BASE_URL = "https://api.tvmaze.com/";
 
 const DEFAULT_IMG = "https://tinyurl.com/tv-missing";
 
-interface ShowsInterface{
-  id: number,
-  name: string,
-  summary: string,
-  image: string,
+interface ShowsInterface {
+  id: number;
+  name: string;
+  summary: string;
+  image: string;
 }
 
-interface ApiResultInterface{
-  id: number,
-  name: string,
-  summary: string,
-  image: {medium: string} | null,
+interface ApiResultInterface {
+  id: number;
+  name: string;
+  summary: string;
+  image: { medium: string } | null;
 }
 
+interface EpisodesInterface {
+  id: number;
+  name: string;
+  season: string;
+  number: string;
+}
 
-async function getShowsByTerm(term:string): Promise<ShowsInterface[]> {
-  // ADD: Remove placeholder & make request to TVMaze search shows API.
-  // return [
-  //   {
-  //     id: 1767,
-  //     name: "The Bletchley Circle",
-  //     summary:
-  //       `<p><b>The Bletchley Circle</b> follows the journey of four ordinary
-  //          women with extraordinary skills that helped to end World War II.</p>
-  //        <p>Set in 1952, Susan, Millie, Lucy and Jean have returned to their
-  //          normal lives, modestly setting aside the part they played in
-  //          producing crucial intelligence, which helped the Allies to victory
-  //          and shortened the war. When Susan discovers a hidden code behind an
-  //          unsolved murder she is met by skepticism from the police. She
-  //          quickly realises she can only begin to crack the murders and bring
-  //          the culprit to justice with her former friends.</p>`,
-  //     image:
-  //         "http://static.tvmaze.com/uploads/images/medium_portrait/147/369403.jpg"
-  //   }
-  // ]
+async function getShowsByTerm(term: string): Promise<ShowsInterface[]> {
   const result = await axios.get(`${BASE_URL}search/shows?q=${term}`);
-  console.log("result", result.data);  
-  const shows = result.data; 
-  const showsResult:ShowsInterface[] = [];
-  for(let {show} of shows){
-    let newShow:ApiResultInterface = show;
-    let showInfo:ShowsInterface = {
+  console.log("result", result.data);
+  const shows = result.data;
+  const showsResult: ShowsInterface[] = [];
+  for (let { show } of shows) {
+    let newShow: ApiResultInterface = show;
+    let showInfo: ShowsInterface = {
       id: newShow.id,
       name: newShow.name,
       summary: newShow.summary,
       image: newShow.image?.medium || DEFAULT_IMG,
-    }
+    };
     console.log("showInfo", showInfo);
-    
+
     showsResult.push(showInfo);
   }
-  return showsResult; 
-
-
+  return showsResult;
 }
-
 
 /** Given list of shows, create markup for each and to DOM */
 
@@ -80,7 +66,7 @@ function populateShows(shows: ShowsInterface[]): void {
   for (let show of shows) {
     console.log("show in populate shows", show);
     const $show = $(
-        `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
+      `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img
               src=${show.image}
@@ -95,11 +81,44 @@ function populateShows(shows: ShowsInterface[]): void {
            </div>
          </div>
        </div>
-      `);
+      `
+    );
 
-    $showsList.append($show);  }
+    $showsList.append($show);
+  }
 }
 
+async function getEpisodesOfShow(id: number): Promise<EpisodesInterface[]> {
+  const response = await axios.get(`${BASE_URL}shows/${id}/episodes`);
+  let episodes: EpisodesInterface[] = response.data.map(
+    (e: EpisodesInterface) => ({
+      id: e.id,
+      name: e.name,
+      season: e.season,
+      number: e.number,
+    })
+  );
+  return episodes;
+}
+function populateEpisodes(episodes: EpisodesInterface[]): void {
+  const $episodeList = $("<ul>");
+  for (let episode of episodes) {
+    const $episode = $(
+      `<li>${episode.name}(Season: ${episode.season}, Number:${episode.number})</li>`
+    );
+    $episodeList.append($episode);
+  }
+  $episodesArea.append($episodeList);
+
+  $episodesArea.show();
+}
+
+$showsList.on('click', ".Show-getEpisodes" ,async function (evt){
+  console.log("evt",  $(evt.target).closest(".Show").data('show-id'));
+  const id:number = $(evt.target).closest(".Show").data("show-id");
+  const episodes = await getEpisodesOfShow(id);
+  populateEpisodes(episodes);
+})
 
 /** Handle search form submission: get shows from API and display.
  *    Hide episodes area (that only gets shown if they ask for episodes)
