@@ -12747,19 +12747,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 var axios_1 = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-var $show = $(".Show");
 var $showsList = $("#showsList");
 var $episodesArea = $("#episodesArea");
-var $episodeBtn = $(".Show-getEpisodes");
 var $searchForm = $("#searchForm");
 var BASE_URL = "https://api.tvmaze.com/";
+var DEFAULT_IMG = "https://tinyurl.com/tv-missing";
 /** Given a search term, search for tv shows that match that query.
  *
  *  Returns (promise) array of show objects: [show, show, ...].
  *    Each show object should contain exactly: {id, name, summary, image}
  *    (if no image URL given by API, put in a default image URL)
  */
-var DEFAULT_IMG = "https://tinyurl.com/tv-missing";
 function getShowsByTerm(term) {
     var _a;
     return __awaiter(this, void 0, void 0, function () {
@@ -12796,10 +12794,13 @@ function populateShows(shows) {
     for (var _i = 0, shows_2 = shows; _i < shows_2.length; _i++) {
         var show = shows_2[_i];
         console.log("show in populate shows", show);
-        var $show_1 = $("<div data-show-id=\"".concat(show.id, "\" class=\"Show col-md-12 col-lg-6 mb-4\">\n         <div class=\"media\">\n           <img\n              src=").concat(show.image, "\n              alt=\"Bletchly Circle San Francisco\"\n              class=\"w-25 me-3\">\n           <div class=\"media-body\">\n             <h5 class=\"text-primary\">").concat(show.name, "</h5>\n             <div><small>").concat(show.summary, "</small></div>\n             <button class=\"btn btn-outline-light btn-sm Show-getEpisodes\">\n               Episodes\n             </button>\n           </div>\n         </div>\n       </div>\n      "));
-        $showsList.append($show_1);
+        var $show = $("<div data-show-id=\"".concat(show.id, "\" class=\"Show col-md-12 col-lg-6 mb-4\">\n         <div class=\"media\">\n           <img\n              src=").concat(show.image, "\n              alt=\"Bletchly Circle San Francisco\"\n              class=\"w-25 me-3\">\n           <div class=\"media-body\">\n             <h5 class=\"text-primary\">").concat(show.name, "</h5>\n             <div><small>").concat(show.summary, "</small></div>\n             <button class=\"btn btn-outline-light btn-sm Show-getEpisodes\">\n               Episodes\n             </button>\n           </div>\n         </div>\n       </div>\n      "));
+        $showsList.append($show);
     }
 }
+/** Given a show ID, get from API and return (promise) array of episodes:
+ *      { id, name, season, number }
+ */
 function getEpisodesOfShow(id) {
     return __awaiter(this, void 0, void 0, function () {
         var response, episodes;
@@ -12819,6 +12820,7 @@ function getEpisodesOfShow(id) {
         });
     });
 }
+/** Given list of episode, contruct list of episodes in DOM */
 function populateEpisodes(episodes) {
     var $episodeList = $("<ul>");
     for (var _i = 0, episodes_1 = episodes; _i < episodes_1.length; _i++) {
@@ -12829,13 +12831,13 @@ function populateEpisodes(episodes) {
     $episodesArea.append($episodeList);
     $episodesArea.show();
 }
-$showsList.on('click', ".Show-getEpisodes", function (evt) {
+$showsList.on("click", ".Show-getEpisodes", function (evt) {
     return __awaiter(this, void 0, void 0, function () {
         var id, episodes;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    console.log("evt", $(evt.target).closest(".Show").data('show-id'));
+                    console.log("evt", $(evt.target).closest(".Show").data("show-id"));
                     id = $(evt.target).closest(".Show").data("show-id");
                     return [4 /*yield*/, getEpisodesOfShow(id)];
                 case 1:
@@ -12880,12 +12882,6 @@ $searchForm.on("submit", function (evt) {
         });
     });
 });
-/** Given a show ID, get from API and return (promise) array of episodes:
- *      { id, name, season, number }
- */
-// async function getEpisodesOfShow(id) { }
-/** Write a clear docstring for this function... */
-// function populateEpisodes(episodes) { }
 
 
 /***/ })
