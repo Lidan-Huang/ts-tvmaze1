@@ -41,6 +41,7 @@ async function getShowsByTerm(term: string): Promise<ShowsInterface[]> {
   const result = await axios.get(`${BASE_URL}search/shows?q=${term}`);
   console.log("result", result.data);
   const shows = result.data;
+ 
   const showsResult: ShowsInterface[] = [];
   for (let { show } of shows) {
     let newShow: ApiResultInterface = show;
@@ -117,7 +118,7 @@ function populateEpisodes(episodes: EpisodesInterface[]): void {
   $episodesArea.show();
 }
 
-$showsList.on("click", ".Show-getEpisodes", async function (evt) {
+$showsList.on("click", ".Show-getEpisodes", async function (evt: JQuery.ClickEvent) {
   console.log("evt", $(evt.target).closest(".Show").data("show-id"));
   const id: number = $(evt.target).closest(".Show").data("show-id");
   const episodes = await getEpisodesOfShow(id);
@@ -129,7 +130,7 @@ $showsList.on("click", ".Show-getEpisodes", async function (evt) {
  */
 
 async function searchForShowAndDisplay() {
-  const term = $("#searchForm-term").val();
+  const term = <string>$("#searchForm-term").val();
   const shows = await getShowsByTerm(term);
 
   $episodesArea.hide();
